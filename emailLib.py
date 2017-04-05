@@ -9,29 +9,40 @@ import email
 import imaplib
 import time
 
+def strip_address(address):
+    index1 = address.find("<")+1
+    index2 = address.find(">")
+    if index1 == -1 or index2 == -1:
+        return address
+    else:
+        return address[index1:index2]
+
 def read_email(user,pwd,server):
     M = imaplib.IMAP4_SSL(server)
     try:
         rv, data = M.login(user,pwd)
     except imaplib.IMAP4.error:
-        logger.log("IMAP login failed.")
+        print("IMAP login failed.")
         return False
     rv, mailboxes = M.list()
     if rv!="OK":
-        logger.log("Could not read mailboxes.")
+        print("Could not read mailboxes.")
         return False
     rv, data = M.select("INBOX")
     if rv!="OK":
-        logger.log("Could not read mailboxes.")
+        print("Could not read mailboxes.")
         return False
 
     rv, data = M.search(None, "UnSeen")
-    output= []
+    output_full= []
     if len(data[0].split()) == 0:
         return ()
     for num in data[0].split():
+        output =[]
         rv, data = M.fetch(num, "(RFC822)")
         msg = email.message_from_string(data[0][1].decode("utf-8"))
+        sender = strip_address(msg["From"])
+        output.append(sender)
         t = time.mktime(email.utils.parsedate_tz(msg.get('date'))[:9])
         if msg.is_multipart():
             for payload in msg.get_payload():
@@ -39,12 +50,13 @@ def read_email(user,pwd,server):
         else:
             print(0)
             output.append(msg.get_payload())
-    return output
+        output_full.append(output)
+    return output_full
 
 
 
 
-def send_email(user,pwd,to,subject,body):
+def send_email(user,pwd,to,subject,body,smtp_addr):
     gmail_user = user
     gmail_password = pwd
 
@@ -59,7 +71,7 @@ def send_email(user,pwd,to,subject,body):
     """ % (_from, ", ".join(to), subject, body)
 
     try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server = smtplib.SMTP_SSL(smtp_addr,465)
         server.ehlo()
         server.login(gmail_user, gmail_password)
         server.sendmail(_from, to, email_text)
@@ -94,3 +106,16 @@ def send_attachment(user,pwd,to,subject,body,file,smtpserver):
     server.login(user, pwd)
 
     server.sendmail(msg['From'], emaillist , msg.as_string())
+
+
+if __name__ == "__main__":
+    import configparser
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    user = config["email"]["user"]
+    password = config["email"]["password"]
+    imap_addr = config["email"]["imap_server"]
+    smtp_addr = config["email"]["smtp_server"]
+    authorized = config["email"]["authorized"].replace(" ","").split(",")
+    #send_email(user,password,"7757700521@vzwpix.com","","Hello!",smtp_addr)
+    print(read_email(user,password,imap_addr))
