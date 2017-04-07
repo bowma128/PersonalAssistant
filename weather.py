@@ -22,6 +22,13 @@ def get_daily_forecasts(json_file):
         outputList[i] = day["high"]+"/"+day["low"]+" | "+day["text"]
     return outputList
 
+def digestable(json_file):
+    # Takes the first day of the forecast and makes it look good for the digest.
+    forecastData = json_file["query"]["results"]["channel"]["item"]["forecast"]
+    day = forecastData[0]
+    output = "The high is "+day["high"]+", the low is "+day["low"]+", and it will be "+day["text"].lower()+"."
+    return output
+
 def get_current_temperature(json_file):
     return json_file["query"]["results"]["channel"]["item"]["condition"]["temp"]
 

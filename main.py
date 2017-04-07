@@ -5,27 +5,41 @@
 #Local imports
 import emailLib, weather, news
 #Python imports
-import configparser, time
+import configparser, time, traceback
 
 def main():
     config=configparser.ConfigParser()
     config.read("config.ini")
     authorized = config["email"]["authorized"].replace(" ","").split(",")
-    send_text(config,"7757700521@vzwpix.com","System is up and running.")
+    admin = config["email"]["admin"]
+    try:
+        digest = time.strptime(config["email"]["digest"],"%I:%M %p")
+    except:
+        print("Couldn't understand your digest time. Assuming digest time to be now.")
+        digest = time.localtime()
+    #send_text(config,admin,"System is up and running.")
     print("System is up and running.")
+    lastDaily = 0 #Last day daily digest was sent (so it only sends 1)
     run_app = True # Change this to false to quit the application.
+    #dailyDigest(config)
     while(run_app):
+        #Check if it's time to run a digest.
+        lt = time.localtime()
+        if lt[3] == digest[3] and lt[4] == digest[4] and lastDaily != lt[7]:
+            lastDaily = lt[7]
+            dailyDigest(config)
+        #Read emails and respond if needed.
         try:
             messages = read_emails(config)
+            if messages != False:
+                for message in messages:
+                    if message[0] in authorized:
+                        run_app = process_message(message,config)            
+                    else:
+                        print("Unauthorized user sending mail: "+message[0])
         except:
-            print("Could not read emails.")
-            time.sleep(1)
-            continue
-        for message in messages:
-            if message[0] in authorized:
-                run_app = process_message(message,config)            
-            else:
-                print("Unauthorized user sending mail: "+message[0])
+            print("Couldn't read emails.")
+            traceback.print_exc()
         time.sleep(1)
 
 def process_message(message,config):
@@ -57,6 +71,30 @@ def process_message(message,config):
         print("Couldn't understand message: "+message_body)
         return True
 
+def dailyDigest(config):
+    print("Sending daily digest.")
+    to = config["email"]["admin"]
+    lt = time.localtime()
+    d = date()
+    location = config["Weather"]["default_location"]
+    json_data = weather.get_weather(location)
+    forecast = weather.digestable(json_data)
+    output = "Good morning! It is "+d+". "+forecast+"\nHope you have a great day!"
+    send_text(config,to,output)
+
+def date():
+    # Returns a nice-looking date.
+    lt = time.localtime()
+    suffix = "th"
+    if lt[2]%10==1:
+        suffix = "st"
+    elif lt[2]%10==2:
+        suffix = "nd"
+    elif lt[2]%10==3:
+        suffix = "rd"
+    number = str(lt[2])
+    return time.strftime("%A, %B "+number+suffix,lt)
+    
 def time_date():
     # Returns a nice-looking time/date.
     lt = time.localtime()
