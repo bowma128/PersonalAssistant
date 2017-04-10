@@ -3,7 +3,7 @@
 # Version 0.1
 
 #Local imports
-import emailLib, weather, news
+import emailLib, weather, news, calendarLib
 #Python imports
 import configparser, time, traceback
 
@@ -17,11 +17,13 @@ def main():
     except:
         print("Couldn't understand your digest time. Assuming digest time to be now.")
         digest = time.localtime()
+
+
+    #dailyDigest(config)
     #send_text(config,admin,"System is up and running.")
     print("System is up and running.")
     lastDaily = 0 #Last day daily digest was sent (so it only sends 1)
     run_app = True # Change this to false to quit the application.
-    #dailyDigest(config)
     while(run_app):
         #Check if it's time to run a digest.
         lt = time.localtime()
@@ -67,6 +69,12 @@ def process_message(message,config):
         print("Me: "+out)
         send_text(config,message[0],out)
         return True
+    elif split_msg[0] == "calendar":
+        print("User: "+message_body)
+        out = calendarLib.readInput(message_body,config)
+        print("Me: "+out)
+        send_text(config,message[0],out)
+        return True
     else:
         print("Couldn't understand message: "+message_body)
         return True
@@ -74,12 +82,26 @@ def process_message(message,config):
 def dailyDigest(config):
     print("Sending daily digest.")
     to = config["email"]["admin"]
+    #Get the date.
     lt = time.localtime()
     d = date()
+    #Get the weather.
     location = config["Weather"]["default_location"]
     json_data = weather.get_weather(location)
     forecast = weather.digestable(json_data)
-    output = "Good morning! It is "+d+". "+forecast+"\nHope you have a great day!"
+    #Get upcoming calendar events, if there are any.
+    events = ""
+    upcoming = calendarLib.getUpcomingEvents(config["calendar"]["url"],config["calendar"]["timezone"])
+    for event in upcoming:
+        if event.date[0] == lt[0] and event.date[1]==lt[1] and event.date[2]==lt[2]:
+            events += event.prettyPrint(False)+"\n"
+    if events != "":
+        events = "Today's events: \n"+events
+    else:
+        events = "You have no events today!\n"
+    output = "Good morning! It is "+d+". "+forecast+"\n"+events +"Hope you have a great day!"
+    print("Sending: ")
+    print(output)
     send_text(config,to,output)
 
 def date():
