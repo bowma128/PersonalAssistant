@@ -12,17 +12,17 @@ To download dependencies: python -m pip install icalendar pytz requests
 
 You will need:
     
-    - A Gmail account solely for the personal assistant.
+    * A Gmail account solely for the personal assistant.
     
-    - An email account to send commands to.
+    * An email account to send commands to.
     
-    - A New York Times Top Stories API Key.
+    * A New York Times Top Stories API Key.
     
-    - A URL of an ICAL file to read from (If using Google Calendar, this would be your "private address" for your calendar.
+    * A URL of an ICAL file to read from (If using Google Calendar, this would be your "private address" for your calendar.
 
 ---
 
-##Setup
+## Setup
                                           
     1. Set up python 3.x and install all requred dependencies.
                                           
@@ -34,7 +34,7 @@ You will need:
 
 ---                                      
 
-##SMS Gateways:
+## SMS Gateways:
                                           
     1. Look up which cellular carrier you are on.
                                           
