@@ -19,8 +19,8 @@ def main():
         digest = time.localtime()
 
 
-    #dailyDigest(config)
-    #send_text(config,admin,"System is up and running.")
+    dailyDigest(config)
+    send_text(config,admin,"System is up and running.")
     print("System is up and running.")
     lastDaily = 0 #Last day daily digest was sent (so it only sends 1)
     run_app = True # Change this to false to quit the application.
