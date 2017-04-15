@@ -3,7 +3,7 @@
 # Version 0.1
 
 #Local imports
-import emailLib, weather, news, calendarLib
+import emailLib, weather, news, calendarLib, reminders
 #Python imports
 import configparser, time, traceback
 
@@ -24,6 +24,7 @@ def main():
     print("System is up and running.")
     lastDaily = 0 #Last day daily digest was sent (so it only sends 1)
     run_app = True # Change this to false to quit the application.
+    lastMinute = -1
     while(run_app):
         #Check if it's time to run a digest.
         lt = time.localtime()
@@ -42,6 +43,14 @@ def main():
         except:
             print("Couldn't read emails.")
             traceback.print_exc()
+        #Check for any reminders that need to be sent every minute.
+        if lastMinute != lt[4]:
+            r = reminders.Reminders()
+            r.parseCSV("reminders.csv")
+            text = r.getTimeReminders()
+            if text != "":
+                send_text(config,config["email"]["admin"],"Reminder: "+text)
+            r.writeCSV("reminders.csv")
         time.sleep(1)
 
 def process_message(message,config):
@@ -74,6 +83,18 @@ def process_message(message,config):
         out = calendarLib.readInput(message_body,config)
         print("Me: "+out)
         send_text(config,message[0],out)
+        return True
+    elif split_msg[0] == "reminders":
+        print("User: "+message_body)
+        r = reminders.Reminders()
+        r.parseCSV("reminders.csv")
+        out = r.readInput(message_body)
+        if out != True:
+            print("Me: "+out)
+            send_text(config,message[0],out)
+        else:
+            print("No need to reply.")
+        r.writeCSV("reminders.csv")
         return True
     else:
         print("Couldn't understand message: "+message_body)
