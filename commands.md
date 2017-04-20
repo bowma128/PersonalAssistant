@@ -1,12 +1,33 @@
 Command list:
-reminders add location <location> <text>
-reminders add once <date> <time> <text>
-reminders add daily <time> <text>
-reminders add monthly <day of month> <time> <text>
-reminders add weekly <day of week> <time> <text>
-reminders remove <text>
-reminders get <location>
-weather temperature [location]
-weather forecast [location]
-weather forecasts <amount> [location]
-news headline <category>
+-reminders add location <location> <text>
+   -Adds a reminder at the specified location. Location must be one word.
+-reminders add once <date> <time> <text>
+   -Adds a reminder to be sent once at the date and time.
+   -Date: MM/DD/YYYY
+   -Time: HH:MM AM
+-reminders add daily <time> <text>
+   -Adds a reminder to be sent every day at the specified time.
+   -Time: HH:MM AM
+-reminders add monthly <day of month> <time> <text>
+   -Adds a reminder to be sent every month at the day and time.
+   -Day: 1-31, day of the month (Note: If the month doesn't have that day, it won't send that month)
+   -Time: HH:MM AM
+-reminders add weekly <day of week> <time> <text>
+   -Adds a reminder to be sent every week at the day and time.
+   -Day Of week: full name of weekday or three-letter abbreviation (mon, tue, wed, thu, fri, sat, sun)
+   -Time: HH:MM AM
+-reminders remove <text>
+   -Removes all reminders matching the text.
+-reminders get <location>
+   -Gets (and removes) all reminders at the specified location. Location must be one word.
+-weather temperature [location]
+   -Gets the current temperature at the location, or the default location if one isn't specified.
+-weather forecast [location]
+   -Gets the current day's forecast at the location, or the default.
+-weather forecasts <amount> [location]
+   -Gets the specified amount of upcoming forecasts at the location.
+-news headline <category>
+   -Gets the top headline in the New York Times in the specified category.
+   -Example categories: world, sports, science
+-quit
+   -Closes the application.
