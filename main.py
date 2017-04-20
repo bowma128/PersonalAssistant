@@ -10,7 +10,11 @@ import configparser, time, traceback
 def main():
     config=configparser.ConfigParser()
     config.read("config.ini")
-    authorized = config["email"]["authorized"].replace(" ","").split(",")
+    try:
+        authorized = config["email"]["authorized"].replace(" ","").split(",")
+    except:
+        print("There was an issue with your authorized email addresses. Is your configuration set up properly?")
+        quit()
     admin = config["email"]["admin"]
     try:
         digest = time.strptime(config["email"]["digest"],"%I:%M %p")
@@ -37,7 +41,7 @@ def main():
             if messages != False:
                 for message in messages:
                     if message[0] in authorized:
-                        run_app = process_message(message,config)            
+                        run_app = process_message(message,config)
                     else:
                         print("Unauthorized user sending mail: "+message[0])
         except:
@@ -137,7 +141,7 @@ def date():
         suffix = "rd"
     number = str(lt[2])
     return time.strftime("%A, %B "+number+suffix,lt)
-    
+
 def time_date():
     # Returns a nice-looking time/date.
     lt = time.localtime()
@@ -156,7 +160,7 @@ def read_emails(config):
     password = config["email"]["password"]
     imap_addr = config["email"]["imap_server"]
     return emailLib.read_email(user,password,imap_addr)
-    
+
 def send_text(config,to,body):
     user = config["email"]["user"]
     password = config["email"]["password"]
