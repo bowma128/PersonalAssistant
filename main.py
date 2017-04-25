@@ -3,7 +3,7 @@
 # Version 0.1
 
 #Local imports
-import emailLib, weather, news, calendarLib, reminders
+import emailLib, weather, news, calendarLib, reminders, disneyland
 #Python imports
 import configparser, time, traceback
 
@@ -99,6 +99,12 @@ def process_message(message,config):
         else:
             print("No need to reply.")
         r.writeCSV("reminders.csv")
+        return True
+    elif split_msg[0] == "disneyland":
+        print("User: "+message_body)
+        out=disneyland.read_input(message_body,config)
+        print("Me: "+out)
+        send_text(config, message[0],out)
         return True
     else:
         print("Couldn't understand message: "+message_body)
