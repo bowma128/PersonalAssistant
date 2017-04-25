@@ -100,12 +100,11 @@ def send_attachment(user,pwd,to,subject,body,file,smtpserver):
     msg.attach(part)
 
 
-    server = smtplib.SMTP("smtpserver")
+    server = smtplib.SMTP_SSL(smtpserver,465)
     server.ehlo()
-    server.starttls()
     server.login(user, pwd)
 
-    server.sendmail(msg['From'], emaillist , msg.as_string())
+    server.sendmail(msg['From'], to, msg.as_string())
 
 
 if __name__ == "__main__":
@@ -117,5 +116,9 @@ if __name__ == "__main__":
     imap_addr = config["email"]["imap_server"]
     smtp_addr = config["email"]["smtp_server"]
     authorized = config["email"]["authorized"].replace(" ","").split(",")
+    print("Sending email")
     #send_email(user,password,"7757700521@vzwpix.com","","Hello!",smtp_addr)
-    print(read_email(user,password,imap_addr))
+    print("Sending attachment")
+    send_attachment(user,password,"7757700521@vzwpix.com","",
+                    "Hello!","picture.jpg",smtp_addr)
+#    print(read_email(user,password,imap_addr))

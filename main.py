@@ -3,7 +3,7 @@
 # Version 0.1
 
 #Local imports
-import emailLib, weather, news, calendarLib, reminders, disneyland
+import emailLib, weather, news, calendarLib, reminders, disneyland, reddit
 #Python imports
 import configparser, time, traceback
 
@@ -23,7 +23,7 @@ def main():
         digest = time.localtime()
 
 
-    dailyDigest(config)
+    #dailyDigest(config)
     send_text(config,admin,"System is up and running.")
     print("System is up and running.")
     lastDaily = 0 #Last day daily digest was sent (so it only sends 1)
@@ -106,6 +106,16 @@ def process_message(message,config):
         print("Me: "+out)
         send_text(config, message[0],out)
         return True
+    elif split_msg[0] == "reddit":
+        print("User: "+message_body)
+        out=reddit.readInput(config,message_body)
+        print("Me: "+out["title"])
+        t = "Top post on /r/"+out["sub"]+": "+out["title"]
+        if out["is_photo"]:
+            send_attachment(config,message[0],t,out["location"])
+        else:
+            send_text(config,message[0],t+" @ "+out["url"])
+        return True
     else:
         print("Couldn't understand message: "+message_body)
         return True
@@ -134,6 +144,14 @@ def dailyDigest(config):
     print("Sending: ")
     print(output)
     send_text(config,to,output)
+    print("Getting top reddit post.")
+    d = reddit.digestable(config)
+    print("Sending: "+d["title"])
+    t = "Top post on /r/"+config["reddit"]["sub"]+": "+d["title"]
+    if d["is_photo"]:
+        send_attachment(config,to,t,d["location"])
+    else:
+        send_text(config,to,t+" @ "+d["url"])
 
 def date():
     # Returns a nice-looking date.
@@ -172,6 +190,12 @@ def send_text(config,to,body):
     password = config["email"]["password"]
     smtp_addr = config["email"]["smtp_server"]
     emailLib.send_email(user,password,to,"",body,smtp_addr)
+
+def send_attachment(config,to,body,file):
+    user = config["email"]["user"]
+    password = config["email"]["password"]
+    smtp_addr = config["email"]["smtp_server"]
+    emailLib.send_attachment(user,password,to,"",body,file,smtp_addr)
 
 
 if __name__ == "__main__":
